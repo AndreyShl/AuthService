@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -14,9 +15,11 @@ import org.springframework.web.client.RestTemplate;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.AbstractMap;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
@@ -66,15 +69,14 @@ public class JwtTokenProvider {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
+        ResponseEntity<Map<String, String>> response = restTemplate.exchange(
                 keycloakAuthServerUrl + "/realms/" + keycloakRealm + "/protocol/openid-connect/token",
                 HttpMethod.POST,
                 request,
-                Map.class
+                new ParameterizedTypeReference<Map<String, String>>() {}
         );
 
-        Map<String, String> tokens = response.getBody();
-        return tokens;
+        return response.getBody();
     }
 
 
@@ -114,15 +116,15 @@ public class JwtTokenProvider {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
 
         try {
-            ResponseEntity<Map> response = restTemplate.exchange(
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                     keycloakAuthServerUrl + "/realms/" + keycloakRealm + "/protocol/openid-connect/token/introspect",
                     HttpMethod.POST,
                     request,
-                    Map.class
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
             );
 
             Map<String, Object> result = response.getBody();
-            return (Boolean) result.get("active");
+            return result != null && result.containsKey("active") ? (Boolean) result.get("active") : false;
         } catch (Exception e) {
             return false;
         }
@@ -131,20 +133,20 @@ public class JwtTokenProvider {
 
     public String generateAccessToken(UUID userId, String role) {
         return Jwts.builder()
-                .setSubject(userId.toString())
+                .subject(userId.toString())
                 .claim("role", role)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidity * 1000))
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + accessTokenValidity * 1000))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
 
     public String generateRefreshToken(UUID userId, String role) {
         return Jwts.builder()
-                .setSubject(userId.toString())
+                .subject(userId.toString())
                 .claim("role", role)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity * 1000))
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + refreshTokenValidity * 1000))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }

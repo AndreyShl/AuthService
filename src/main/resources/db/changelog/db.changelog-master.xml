@@ -7,5 +7,6 @@
            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <include file="db/changelog/create-credentials-table.xml"/>
+    <include file="db/changelog/create-new-colum-in-table-credentials.xml"/>
 
 </databaseChangeLog>

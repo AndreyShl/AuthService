@@ -20,16 +20,17 @@ public class TokenResponseDto {
     private String refreshToken;
     
     @JsonProperty("expires_in")
-    private String expiresIn;
+    private Integer expiresIn;
     
     @JsonProperty("refresh_expires_in")
-    private String refreshExpiresIn;
+    private Integer refreshExpiresIn;
     
     @JsonProperty("token_type")
     private String tokenType;
     
     @JsonProperty("not-before-policy")
     private Integer notBeforePolicy;
+
     
     @JsonProperty("session_state")
     private String sessionState;
