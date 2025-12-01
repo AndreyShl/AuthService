@@ -92,11 +92,11 @@ public class JwtTokenProvider {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
+        ResponseEntity<Map<String,String>> response = restTemplate.exchange(
                 keycloakAuthServerUrl + "/realms/" + keycloakRealm + "/protocol/openid-connect/token",
                 HttpMethod.POST,
                 request,
-                Map.class
+                new ParameterizedTypeReference<Map<String, String>>() {}
         );
 
         Map<String, String> tokens = response.getBody();

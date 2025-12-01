@@ -87,7 +87,9 @@ public class AuthController {
             Map<String, String> tokens = jwtTokenProvider.refreshKeycloakToken(refreshRequest.getRefreshToken());
             RefreshTokenResponseDto response = tokenMapper.toRefreshTokenResponseDto(tokens);
             return ResponseEntity.ok(response);
+
         } catch (HttpClientErrorException e) {
+            e.printStackTrace();
             if (e.getStatusCode().value() == 400 || e.getStatusCode().value() == 401) {
                 throw new TokenExpiredException("Invalid or expired refresh token");
             }
@@ -161,7 +163,7 @@ public class AuthController {
 
     @PostMapping("/token")
     public ResponseEntity<TokenResponseDto> getToken(@Valid @RequestBody TokenRequestDto tokenRequest) {
-        String grantType = tokenRequest.getGrant_type();
+        String grantType = tokenRequest.getGrantType();
 
         if (grantType == null) {
             throw new BadCredentialsException("Grant type is required");
@@ -188,7 +190,7 @@ public class AuthController {
                 throw new UnauthorizedException("Authentication failed", e);
             }
         } else if ("refresh_token".equals(grantType)) {
-            String refreshToken = tokenRequest.getRefresh_token();
+            String refreshToken = tokenRequest.getRefreshToken();
 
             if (refreshToken == null) {
                 throw new BadCredentialsException("Refresh token is required");
